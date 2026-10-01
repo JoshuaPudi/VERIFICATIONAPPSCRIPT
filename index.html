@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Barangay ID Verification</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="bg-light">
+  <nav class="navbar navbar-dark bg-success shadow-sm">
+    <div class="container">
+      <span class="navbar-brand fw-semibold">Barangay ID Verification</span>
+    </div>
+  </nav>
+
+  <main class="container py-5" style="max-width: 760px;">
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-4 p-md-5">
+        <div class="text-center mb-4">
+          <h1 class="h3 fw-bold mb-2">Verify Barangay ID</h1>
+          <p class="text-secondary mb-0">Scan the QR code or search using ID Number and Last Name.</p>
+        </div>
+
+        <ul class="nav nav-pills nav-fill mb-4" id="verifyTabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="search-tab" data-bs-toggle="pill" data-bs-target="#search-pane" type="button" role="tab">Search ID</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="scan-tab" data-bs-toggle="pill" data-bs-target="#scan-pane" type="button" role="tab">Scan QR</button>
+          </li>
+        </ul>
+
+        <div class="tab-content">
+          <div class="tab-pane fade show active" id="search-pane" role="tabpanel">
+            <form id="searchForm" class="row g-3">
+              <div class="col-md-6">
+                <label for="idNumber" class="form-label">ID Number</label>
+                <input type="text" class="form-control" id="idNumber" required autocomplete="off">
+              </div>
+              <div class="col-md-6">
+                <label for="lastName" class="form-label">Last Name</label>
+                <input type="text" class="form-control" id="lastName" required autocomplete="off">
+              </div>
+              <div class="col-12 d-grid">
+                <button class="btn btn-success" type="submit">Verify ID</button>
+              </div>
+            </form>
+          </div>
+
+          <div class="tab-pane fade" id="scan-pane" role="tabpanel">
+            <div class="text-center">
+              <div id="reader" class="border rounded p-2 bg-white mb-3"></div>
+              <p class="small text-secondary mb-0">Allow camera access when prompted, then point the camera at the QR code.</p>
+            </div>
+          </div>
+        </div>
+
+        <div id="messageBox" class="alert d-none mt-4" role="alert"></div>
+
+        <div id="resultCard" class="card border-success d-none mt-4">
+          <div class="card-header bg-success text-white fw-semibold">Verification Result</div>
+          <div class="card-body">
+            <div class="row g-3">
+              <div class="col-12">
+                <div class="small text-secondary">Name</div>
+                <div class="fw-semibold" id="resultName">-</div>
+              </div>
+              <div class="col-md-6">
+                <div class="small text-secondary">Designation</div>
+                <div class="fw-semibold" id="resultDesignation">-</div>
+              </div>
+              <div class="col-md-6">
+                <div class="small text-secondary">Status</div>
+                <div><span class="badge text-bg-success" id="resultStatus">VALID</span></div>
+              </div>
+              <div class="col-md-6">
+                <div class="small text-secondary">Date Acquired</div>
+                <div class="fw-semibold" id="resultAcquired">-</div>
+              </div>
+              <div class="col-md-6">
+                <div class="small text-secondary">Expiration Date</div>
+                <div class="fw-semibold" id="resultExpiration">-</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+  <script src="script.js"></script>
+</body>
+</html>
