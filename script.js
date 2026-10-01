@@ -1,19 +1,22 @@
-const APPS_SCRIPT_URL = "PASTE_YOUR_APPS_SCRIPT_WEB_APP_URL_HERE";
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyxrHTX310DMF3dIbzltT0HIwDvqyShdKvZoBu6RErawbNX1T2lKl6suf2AhBGi9UIvVw/exec";
 
 const searchForm = document.getElementById("searchForm");
 const resultCard = document.getElementById("resultCard");
 const messageBox = document.getElementById("messageBox");
 
+// Show a Bootstrap alert message.
 function showMessage(message, type = "danger") {
   resultCard.classList.add("d-none");
   messageBox.className = `alert alert-${type} mt-4`;
   messageBox.textContent = message;
 }
 
+// Hide the alert message.
 function hideMessage() {
   messageBox.classList.add("d-none");
 }
 
+// Display a verified ID record returned by Apps Script.
 function showResult(data) {
   hideMessage();
 
@@ -24,6 +27,7 @@ function showResult(data) {
 
   const statusBadge = document.getElementById("resultStatus");
   const status = (data.status || "UNKNOWN").toUpperCase();
+
   statusBadge.textContent = status;
   statusBadge.className = "badge";
 
@@ -31,6 +35,8 @@ function showResult(data) {
     statusBadge.classList.add("text-bg-success");
   } else if (status === "EXPIRED") {
     statusBadge.classList.add("text-bg-warning");
+  } else if (status === "INACTIVE") {
+    statusBadge.classList.add("text-bg-danger");
   } else {
     statusBadge.classList.add("text-bg-secondary");
   }
@@ -38,13 +44,10 @@ function showResult(data) {
   resultCard.classList.remove("d-none");
 }
 
+// Send a verification request to the Google Apps Script Web App.
 async function requestVerification(params) {
-  if (APPS_SCRIPT_URL.includes("PASTE_YOUR")) {
-    showMessage("Apps Script URL is not configured yet.", "warning");
-    return;
-  }
-
   const url = new URL(APPS_SCRIPT_URL);
+
   Object.entries(params).forEach(([key, value]) => {
     url.searchParams.set(key, value);
   });
@@ -53,7 +56,10 @@ async function requestVerification(params) {
 
   try {
     const response = await fetch(url.toString());
-    if (!response.ok) throw new Error("Request failed");
+
+    if (!response.ok) {
+      throw new Error("Request failed");
+    }
 
     const data = await response.json();
 
@@ -69,6 +75,7 @@ async function requestVerification(params) {
   }
 }
 
+// Manual verification using Control Number + Last Name.
 searchForm.addEventListener("submit", (event) => {
   event.preventDefault();
 
@@ -76,7 +83,7 @@ searchForm.addEventListener("submit", (event) => {
   const lastName = document.getElementById("lastName").value.trim();
 
   if (!idNumber || !lastName) {
-    showMessage("Enter both ID Number and Last Name.", "warning");
+    showMessage("Enter both Control Number and Last Name.", "warning");
     return;
   }
 
@@ -87,21 +94,34 @@ searchForm.addEventListener("submit", (event) => {
   });
 });
 
-function extractToken(decodedText) {
+// Read a Control Number from an existing QR code.
+// If the QR contains a URL, the code tries common ID parameters first.
+// Otherwise, the complete QR text is treated as the Control Number.
+function extractControlNumber(decodedText) {
+  const value = String(decodedText || "").trim();
+
   try {
-    const qrUrl = new URL(decodedText);
-    return qrUrl.searchParams.get("token") || decodedText;
+    const qrUrl = new URL(value);
+
+    return (
+      qrUrl.searchParams.get("idNumber") ||
+      qrUrl.searchParams.get("controlNumber") ||
+      qrUrl.searchParams.get("id") ||
+      value
+    ).trim();
   } catch {
-    return decodedText.trim();
+    return value;
   }
 }
 
 let lastScannedValue = "";
 let lastScannedAt = 0;
 
+// Called automatically when the camera successfully reads a QR code.
 function onScanSuccess(decodedText) {
   const now = Date.now();
 
+  // Prevent the same QR from firing repeatedly every frame.
   if (decodedText === lastScannedValue && now - lastScannedAt < 3000) {
     return;
   }
@@ -109,13 +129,15 @@ function onScanSuccess(decodedText) {
   lastScannedValue = decodedText;
   lastScannedAt = now;
 
-  const token = extractToken(decodedText);
+  const controlNumber = extractControlNumber(decodedText);
+
   requestVerification({
     action: "qr",
-    token
+    idNumber: controlNumber
   });
 }
 
+// Start the QR scanner if the library loaded correctly.
 if (typeof Html5QrcodeScanner !== "undefined") {
   const scanner = new Html5QrcodeScanner(
     "reader",
